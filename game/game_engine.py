@@ -12,13 +12,14 @@ class GameEngine:
         self.height = height
         self.paddle_width = 10
         self.paddle_height = 100
-
+        
         self.player = Paddle(10, height // 2 - 50, self.paddle_width, self.paddle_height)
         self.ai = Paddle(width - 20, height // 2 - 50, self.paddle_width, self.paddle_height)
         self.ball = Ball(width // 2, height // 2, 7, 7, width, height)
 
         self.player_score = 0
         self.ai_score = 0
+        self.winning_score = 10
         self.font = pygame.font.SysFont("Arial", 30)
 
     def handle_input(self):
@@ -57,24 +58,57 @@ class GameEngine:
         self.check_game_over(pygame.display.get_surface())
 
     def check_game_over(self, screen):
-        # If either player reaches 5 points, show game over message
-        if self.player_score >= 5 or self.ai_score >= 5:
-            winner_text = "Player Wins!" if self.player_score >= 5 else "AI Wins!"
+        # If someone reaches the winning score
+        if self.player_score >= self.winning_score or self.ai_score >= self.winning_score:
+            winner_text = "Player Wins!" if self.player_score >= self.winning_score else "AI Wins!"
     
-            # Render message
-            text_surface = self.font.render(winner_text, True, WHITE)
-            text_rect = text_surface.get_rect(center=(self.width // 2, self.height // 2))
-            screen.blit(text_surface, text_rect)
+            # Display the winner
+            screen.fill((0, 0, 0))
+            winner_surface = self.font.render(winner_text, True, WHITE)
+            winner_rect = winner_surface.get_rect(center=(self.width // 2, self.height // 2 - 60))
+            screen.blit(winner_surface, winner_rect)
     
-            # Display final screen
+            # Display replay options
+            options = [
+                "Press 3 for Best of 3",
+                "Press 5 for Best of 5",
+                "Press 7 for Best of 7",
+                "Press ESC to Exit"
+            ]
+    
+            for i, text in enumerate(options):
+                option_surface = self.font.render(text, True, WHITE)
+                option_rect = option_surface.get_rect(center=(self.width // 2, self.height // 2 + i * 40))
+                screen.blit(option_surface, option_rect)
+    
             pygame.display.flip()
     
-            # Keep message visible for 5 seconds
-            pygame.time.delay(5000)
+            # Wait for user input
+            waiting = True
+            while waiting:
+                for event in pygame.event.get():
+                    if event.type == pygame.QUIT:
+                        pygame.quit()
+                        exit()
+                    if event.type == pygame.KEYDOWN:
+                        if event.key == pygame.K_ESCAPE:
+                            pygame.quit()
+                            exit()
+                        elif event.key == pygame.K_3:
+                            self.winning_score = 2  # Best of 3 means first to 2
+                            waiting = False
+                        elif event.key == pygame.K_5:
+                            self.winning_score = 3  # Best of 5 means first to 3
+                            waiting = False
+                        elif event.key == pygame.K_7:
+                            self.winning_score = 4  # Best of 7 means first to 4
+                            waiting = False
     
-            # Quit pygame after delay
-            pygame.quit()
-            exit()
+            # Reset everything for a new match
+            self.player_score = 0
+            self.ai_score = 0
+            self.ball.reset()
+
 
     def render(self, screen):
         # Draw paddles and ball

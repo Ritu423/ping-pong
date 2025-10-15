@@ -30,7 +30,20 @@ class GameEngine:
 
     def update(self):
         self.ball.move()
-        self.ball.check_collision(self.player, self.ai)
+        # --- Paddle Collision Check (rectangular ball) ---
+        ball_rect = self.ball.rect()
+        player_rect = self.player.rect()
+        ai_rect = self.ai.rect()
+
+        if ball_rect.colliderect(player_rect):
+            # Snap ball to right of player paddle
+            self.ball.x = player_rect.right
+            self.ball.velocity_x *= -1
+
+        elif ball_rect.colliderect(ai_rect):
+            # Snap ball to left of AI paddle
+            self.ball.x = ai_rect.left - self.ball.width
+            self.ball.velocity_x *= -1
 
         if self.ball.x <= 0:
             self.ai_score += 1

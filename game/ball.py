@@ -14,12 +14,21 @@ class Ball:
         self.velocity_x = random.choice([-5, 5])
         self.velocity_y = random.choice([-3, 3])
 
-    def move(self):
+    def move(self, wall_sound=None):
         self.x += self.velocity_x
         self.y += self.velocity_y
 
-        if self.y <= 0 or self.y + self.height >= self.screen_height:
+        # Top/bottom wall bounce
+        if self.y <= 0:
+            self.y = 0
             self.velocity_y *= -1
+            if wall_sound:
+                wall_sound.play()
+        elif self.y + self.height >= self.screen_height:
+            self.y = self.screen_height - self.height
+            self.velocity_y *= -1
+            if wall_sound:
+                wall_sound.play()
 
     def check_collision(self, player, ai):
         if self.rect().colliderect(player.rect()) or self.rect().colliderect(ai.rect()):
